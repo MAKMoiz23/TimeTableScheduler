@@ -62,10 +62,6 @@ namespace TimetableScheduler
 				bool slotAssigned = false;
 				List<(int day, int slot)> availableSlotsCopy = availableSlots.GetRange(0, availableSlots.Count);
 
-				// Get the list of semesters for courses from the same department as the current course
-				var sameDeptCourses = courses.Where(c => c.Dept == course.Dept && c.Semester != course.Semester)
-											  .Select(c => c.Semester).ToList();
-
 				// Check until a slot is assigned
 				while (!slotAssigned)
 				{
@@ -79,7 +75,9 @@ namespace TimetableScheduler
 					// Check if the slot is available and no course from the same department and different semester is already scheduled on the day
 					if (
 						//!assignedCourses.ContainsKey((day, course.Dept)) &&
-						(!assignedSlots.ContainsKey((day, slot)) || assignedSlots[(day, slot)].Semester != course.Semester) 
+						(!assignedSlots.ContainsKey((day, slot))
+						|| (assignedSlots[(day, slot)].Semester != course.Semester && assignedSlots[(day, slot)].Dept == course.Dept)) 
+						//|| (!assignedCourses.ContainsKey((day, course.Dept)) || assignedCourses[(day, course.Dept)].Code == course.Code)
 						//&& (!sameDeptCourses.Any(s => assignedCourses.ContainsKey((day, course.Dept)) && assignedCourses[(day, course.Dept)].Semester != s))
 						)
 					{
