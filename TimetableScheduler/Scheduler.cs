@@ -76,7 +76,8 @@ namespace TimetableScheduler
 					if (
 						//!assignedCourses.ContainsKey((day, course.Dept)) &&
 						(!assignedSlots.ContainsKey((day, slot))
-						|| (assignedSlots[(day, slot)].Semester != course.Semester && assignedSlots[(day, slot)].Dept == course.Dept)) 
+						|| (assignedSlots[(day, slot)].Semester != course.Semester && assignedSlots[(day, slot)].Dept == course.Dept) 
+						|| (assignedSlots[(day, slot)].Semester == course.Semester && assignedSlots[(day, slot)].Dept != course.Dept))
 						//|| (!assignedCourses.ContainsKey((day, course.Dept)) || assignedCourses[(day, course.Dept)].Code == course.Code)
 						//&& (!sameDeptCourses.Any(s => assignedCourses.ContainsKey((day, course.Dept)) && assignedCourses[(day, course.Dept)].Semester != s))
 						)
