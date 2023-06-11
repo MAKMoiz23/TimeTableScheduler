@@ -32,8 +32,8 @@ List<Course> courses = new List<Course>() {
 DateTime examStartDate = new DateTime(2023, 5, 1);
 DateTime examEndDate = new DateTime(2023, 5, 10);
 int examPeriodInMinutes = 120;
-DateTime classStartTime = new DateTime(2023, 4, 1, 8, 0, 0);
-DateTime classEndTime = new DateTime(2023, 4, 1, 17, 0, 0);
+TimeSpan classStartTime = new TimeSpan(8, 0, 0);
+TimeSpan classEndTime = new TimeSpan(17, 0, 0);
 
 // Calculate the number of days between the exam start and end dates
 int examDays = (int)(examEndDate - examStartDate).TotalDays + 1;
@@ -41,24 +41,39 @@ int examDays = (int)(examEndDate - examStartDate).TotalDays + 1;
 // Calculate the number of slots per day based on the class start and end times and the exam period
 int slotsPerDay = (int)((classEndTime - classStartTime).TotalMinutes / examPeriodInMinutes);
 
+
+List<TimeSpan> timeSlots = new List<TimeSpan>();
+
+// Create time slots based on the number of slots per day
+TimeSpan currentTime = classStartTime;
+for (int i = 0; i < slotsPerDay; i++)
+{
+	timeSlots.Add(currentTime);
+	currentTime = currentTime.Add(TimeSpan.FromMinutes(examPeriodInMinutes));
+}
 // Initialize the 2D array for the time table
 //string[,] timeTable = new string[examDays, slotsPerDay];
 
 Scheduler sc = new Scheduler();
 
-dynamic[,] TimeTable = sc.GenerateTimeTable(courses, examStartDate, examEndDate, examPeriodInMinutes, classStartTime, classEndTime, slotsPerDay, examDays);
+List<List<List<Course>>> TimeTable = sc.GenerateTimeTable(courses, examStartDate, examEndDate, examPeriodInMinutes, classStartTime, classEndTime, slotsPerDay, examDays);
 
 //Print the time table
-for (int i = 0; i < TimeTable.GetLength(0); i++)
+//for (int i = 0; i < TimeTable.GetLength(0); i++)
+for (int i = 0; i < TimeTable.Count; i++)
 {
-	for (int j = 0; j < TimeTable.GetLength(1); j++)
+	DateTime currentDate = examStartDate.AddDays(i);
+	Console.Write(currentDate.ToShortDateString()+ "	");
+	//for (int j = 0; j < TimeTable.GetLength(1); j++)
+	for (int j = 0; j < TimeTable[i]?.Count; j++)
 	{
-		if (TimeTable[i, j].Count > 0)
+		Console.Write(timeSlots[j]);
+		if (TimeTable[i][j]?.Count > 0)
 		{
 			List<string> temp = new List<string>();
-			for (int k = 0; k < TimeTable[i, j].Count; k++)
+			for (int k = 0; k < TimeTable[i][j]?.Count; k++)
 			{
-				temp.Add(TimeTable[i, j][k].Code);
+				temp.Add(TimeTable[i][j][k].Code);
 			}
 			Console.Write("[" + string.Join(", ", temp) + "] ");
 		}
