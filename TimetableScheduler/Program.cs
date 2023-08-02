@@ -88,8 +88,8 @@ List<List<List<Course>>> TimeTable = sc.GenerateTimeTable(courses, examStartDate
 List<Room> rooms = new List<Room>
 {
     new Room { RoomID = 1, Rows = 5, Columns = 5, RoomCode = 101 },
-    //new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 102 }
-    //new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 103 }
+    new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 102 },
+    new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 103 }
     // Add more rooms as needed
 };
 
