@@ -59,11 +59,11 @@ Scheduler sc = new Scheduler();
 List<List<List<Course>>> TimeTable = sc.GenerateTimeTable(courses, examStartDate, examEndDate, examPeriodInMinutes, classStartTime, classEndTime, slotsPerDay, examDays);
 
 //Print the time table
-////for (int i = 0; i < TimeTable.GetLength(0); i++)
+//for (int i = 0; i < TimeTable.GetLength(0); i++)
 //for (int i = 0; i < TimeTable.Count; i++)
 //{
 //	DateTime currentDate = examStartDate.AddDays(i);
-//	Console.Write(currentDate.ToShortDateString()+ "	");
+//	Console.Write(currentDate.ToShortDateString() + "	");
 //	//for (int j = 0; j < TimeTable.GetLength(1); j++)
 //	for (int j = 0; j < TimeTable[i]?.Count; j++)
 //	{
@@ -83,12 +83,13 @@ List<List<List<Course>>> TimeTable = sc.GenerateTimeTable(courses, examStartDate
 //		}
 //	}
 //	Console.WriteLine();
+//}
 
 List<Room> rooms = new List<Room>
 {
     new Room { RoomID = 1, Rows = 5, Columns = 5, RoomCode = 101 },
-    new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 102 },
-    new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 103 }
+    //new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 102 }
+    //new Room { RoomID = 2, Rows = 6, Columns = 6, RoomCode = 103 }
     // Add more rooms as needed
 };
 
@@ -203,10 +204,10 @@ var studentsExam4 = new List<Student>
 var exams = new List<Exam>
 {
     new Exam { ExamID = 1, Date = new DateTime(2023, 07, 30), Timeslot = new TimeSpan(9, 0, 0), CourseCode = "C001", Students = studentsExam1 },
-    new Exam { ExamID = 2, Date = new DateTime(2023, 07, 30), Timeslot = new TimeSpan(14, 0, 0), CourseCode = "C002", Students = studentsExam2 },
-    new Exam { ExamID = 3, Date = new DateTime(2023, 08, 01), Timeslot = new TimeSpan(10, 0, 0), CourseCode = "C003", Students = studentsExam3 },
+    new Exam { ExamID = 2, Date = new DateTime(2023, 07, 30), Timeslot = new TimeSpan(9, 0, 0), CourseCode = "C002", Students = studentsExam2 },
+    new Exam { ExamID = 3, Date = new DateTime(2023, 07, 30), Timeslot = new TimeSpan(9, 0, 0), CourseCode = "C003", Students = studentsExam3 },
     new Exam { ExamID = 4, Date = new DateTime(2023, 08, 01), Timeslot = new TimeSpan(15, 30, 0), CourseCode = "C004", Students = studentsExam4 },
-    new Exam { ExamID = 4, Date = new DateTime(2023, 08, 01), Timeslot = new TimeSpan(15, 30, 0), CourseCode = "C005", Students = studentsExam4 }
+    new Exam { ExamID = 5, Date = new DateTime(2023, 08, 01), Timeslot = new TimeSpan(15, 30, 0), CourseCode = "C005", Students = studentsExam4 }
     // Add more exams as needed
 };
 
@@ -239,7 +240,3 @@ foreach (var room in seatingPlan)
 
     Console.WriteLine(new string('-', (room.Columns * 13) + 1));
 }
-
-
-
-

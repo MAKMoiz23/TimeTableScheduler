@@ -1,93 +1,113 @@
-﻿namespace TimetableScheduler
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace TimetableScheduler
 {
     public class SeatingPlan
     {
+        private static Random random = new Random();
+
         public List<Room> GenerateSeatingPlan(List<Room> rooms, List<Exam> exams, int studentsPerColumn)
         {
-            // Step 1: Group exams by the same date and course.
-            var examsGroupedByDateAndCourse = exams.GroupBy(exam => new { exam.Date, exam.CourseCode });
+            List<Room> result = new List<Room>();
 
-            foreach (var examsGroup in examsGroupedByDateAndCourse)
+            int n = rooms.Count;
+            while (n > 1)
             {
-                var examsToProcess = examsGroup.ToList();
-                var roomGroups = new List<List<Room>>();
-
-                // Create separate room groups for exams with the same date but different courses
-                foreach (var room in rooms)
-                {
-                    room.RowColStudents =  Enumerable.Range(0, room.Rows)
-                                                     .Select(_ => Enumerable.Repeat(default(Student), room.Columns).ToList())
-                                                     .ToList();
-                    if (examsToProcess.Count == 0)
-                        break;
-
-                    var currentRoomGroup = new List<Room>();
-                    currentRoomGroup.Add(room);
-
-                    // Add more rooms to the current group until no more exams can be assigned
-                    for (int i = 1; i < rooms.Count && examsToProcess.Count > 0; i++)
-                    {
-                        var nextRoom = rooms[(rooms.IndexOf(room) + i) % rooms.Count];
-                        if (examsToProcess.Any(exam => exam.Students?.Count <= nextRoom.Rows * nextRoom.Columns - nextRoom.RowColStudents.Sum(row => row.Count)))
-                            currentRoomGroup.Add(nextRoom);
-                    }
-
-                    roomGroups.Add(currentRoomGroup);
-                }
-
-                // Distribute exams in the current group among the rooms
-                foreach (var roomGroup in roomGroups)
-                {
-                    int examIndex = 0;
-                    var roomsToProcess = roomGroup.ToList();
-
-                    while (examsToProcess.Count > 0 && roomsToProcess.Count > 0)
-                    {
-                        var currentRoom = roomsToProcess[examIndex % roomsToProcess.Count];
-
-                        // Find the first exam in examsToProcess that can fit into the room.
-                        var examToAssign = examsToProcess.FirstOrDefault(exam => exam.Students?.Count <= currentRoom.Rows * currentRoom.Columns - currentRoom.RowColStudents.Sum(row => row.Count));
-
-                        if (examToAssign != null)
-                        {
-                            // Assign students from the selected exam to this room.
-                            int studentsAssigned = 0;
-                            while (studentsAssigned < examToAssign.Students.Count)
-                            {
-                                int availableSeats = currentRoom.Rows * currentRoom.Columns - currentRoom.RowColStudents.Sum(row => row.Count);
-                                int studentsToAssign = Math.Min(availableSeats, studentsPerColumn);
-
-                                // Calculate the number of students to be assigned to each column.
-                                int studentsPerRow = (int)Math.Ceiling((double)studentsToAssign / currentRoom.Columns);
-
-                                // Assign students to columns.
-                                int studentIndex = studentsAssigned;
-                                for (int col = 0; col < currentRoom.Columns; col++)
-                                {
-                                    var columnStudents = new List<Student>();
-                                    for (int row = 0; row < currentRoom.Rows && studentIndex < examToAssign.Students.Count; row++)
-                                    {
-                                        columnStudents.Add(examToAssign.Students[studentIndex]);
-                                        studentIndex++;
-                                    }
-                                    currentRoom.RowColStudents[col].AddRange(columnStudents);
-                                }
-
-                                // Update the number of students assigned for this exam.
-                                studentsAssigned += studentsToAssign;
-                            }
-
-                            // Remove the assigned exam from the examsToProcess list.
-                            examsToProcess.Remove(examToAssign);
-                        }
-
-                        examIndex++;
-                    }
-                }
+                n--;
+                int k = random.Next(n + 1);
+                (rooms[n], rooms[k]) = (rooms[k], rooms[n]);
             }
 
-            return rooms;
-        }
+            int rowStep = 2; // Skip every other row
+            int courseIndex = 0;
 
+            // Dictionary to keep track of exams already placed in each room
+            Dictionary<Room, List<Exam>> roomExamsDict = new Dictionary<Room, List<Exam>>();
+
+            var examsGroupedByDateAndCourse = exams.GroupBy(exam => new { exam.Date, exam.Timeslot });
+            foreach (var examsGroup in examsGroupedByDateAndCourse)
+            {
+                List<Room> availableRoomsCopy = rooms.GetRange(0, rooms.Count);
+
+                var examToProcess = examsGroup.ToList();
+                foreach (Exam exam in examToProcess)
+                {
+                    int index = random.Next(availableRoomsCopy.Count);
+                    availableRoomsCopy[index].Exam?.Add(exam);
+                    if (availableRoomsCopy[index].RowColStudents.Count == 0)
+                    {
+                        availableRoomsCopy[index].RowColStudents = Enumerable.Range(0, availableRoomsCopy[index].Rows)
+                            .Select(_ => Enumerable.Repeat(default(Student), availableRoomsCopy[index].Columns).ToList())
+                            .ToList();
+                    }
+
+                    // Populating students in the seating plan
+                    int startRow = 0;
+
+                    List<Exam> examsInRoom;
+                    if (roomExamsDict.TryGetValue(availableRoomsCopy[index], out examsInRoom))
+                    {
+                        // Check if any exam in the room matches the current exam's date, time, and room
+                        bool hasMatchingExam = examsInRoom.Any(e =>
+                            e.Date == exam.Date &&
+                            e.Timeslot == exam.Timeslot &&
+                            e.Room?.RoomID == exam.Room?.RoomID);
+
+                        if (!hasMatchingExam)
+                        {
+                            for (int col = courseIndex; col < availableRoomsCopy[index].Columns; col += 2)
+                            {
+                                for (int row = startRow; row < availableRoomsCopy[index].Rows; row += rowStep)
+                                {
+                                    if (availableRoomsCopy[index].RowColStudents[row][col] == null)
+                                    {
+                                        if (exam.Students != null && exam.Students.Count > 0)
+                                        {
+                                            availableRoomsCopy[index].RowColStudents[row][col] = exam.Students[0];
+                                            exam.Students.RemoveAt(0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Use the same columns as the matching exam
+                            foreach (Exam matchingExam in examsInRoom)
+                            {
+                                for (int col = 0; col < availableRoomsCopy[index].Columns; col++)
+                                {
+                                    for (int row = startRow; row < availableRoomsCopy[index].Rows; row += rowStep)
+                                    {
+                                        if (availableRoomsCopy[index].RowColStudents[row][col] == null)
+                                        {
+                                            if (matchingExam.Students != null && matchingExam.Students.Count > 0)
+                                            {
+                                                availableRoomsCopy[index].RowColStudents[row][col] = matchingExam.Students[0];
+                                                matchingExam.Students.RemoveAt(0);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Update the dictionary with the current exam
+                    if (examsInRoom == null)
+                    {
+                        examsInRoom = new List<Exam>();
+                        roomExamsDict[availableRoomsCopy[index]] = examsInRoom;
+                    }
+                    examsInRoom.Add(exam);
+
+                    courseIndex = (courseIndex + 1) % 2; // Switch to the other course for the next iteration
+                }
+                result.AddRange(availableRoomsCopy);
+            }
+            return result;
+        }
     }
 }

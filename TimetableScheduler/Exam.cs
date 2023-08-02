@@ -7,7 +7,9 @@
         public TimeSpan Timeslot { get; set; }
         public string? CourseCode { get; set; }
         public int NumberOfStudents { get; set; }
+        public bool Flag { get; set; } = false;
         public List<Student>? Students { get; set; }
+        public Room? Room { get; set; }
     }
 
 }

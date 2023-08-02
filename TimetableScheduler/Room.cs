@@ -6,7 +6,7 @@
         public int Rows { get; set; }
         public int Columns { get; set; }
         public int RoomCode { get; set; }
-        public int? ExamID{ get; set; }
+        public List<Exam>? Exam { get; set; } = new();
         public List<List<Student?>> RowColStudents { get; set; } = new();
     }
 
